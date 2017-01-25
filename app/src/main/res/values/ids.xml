@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="category_vp" type="id"/>
+    <item name="addCategory" type="id"/>
+    <item name="content_rv" type="id"/>
+    
+</resources>

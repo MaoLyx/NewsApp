@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">NewsApp</string>
+    <!--Logo-->
+    <string name="logo_txt">新闻</string>
+</resources>
