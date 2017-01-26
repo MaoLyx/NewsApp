@@ -11,7 +11,9 @@ import retrofit2.http.Query;
 
 public interface IHttpService {
 
-    @GET("/index? key=c35a046db429251d1177da4abedde91a")
+    final String BASE_URL = "http://v.juhe.cn/toutiao/";
+
+    @GET("index? key=c35a046db429251d1177da4abedde91a")
     Call<ResponseBean> getNews(@Query("type") String type);
 
 }

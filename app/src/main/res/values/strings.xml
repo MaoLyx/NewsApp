@@ -2,4 +2,5 @@
     <string name="app_name">NewsApp</string>
     <!--Logo-->
     <string name="logo_txt">新闻</string>
+    <string name="error_net">网络访问异常..</string>
 </resources>

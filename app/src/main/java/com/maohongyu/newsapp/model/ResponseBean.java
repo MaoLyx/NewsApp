@@ -143,6 +143,38 @@ public class ResponseBean {
             public void setThumbnail_pic_s03(String thumbnail_pic_s03) {
                 this.thumbnail_pic_s03 = thumbnail_pic_s03;
             }
+
+            @Override
+            public String toString() {
+                return "DataBean{" +
+                        "uniquekey='" + uniquekey + '\'' +
+                        ", title='" + title + '\'' +
+                        ", date='" + date + '\'' +
+                        ", category='" + category + '\'' +
+                        ", author_name='" + author_name + '\'' +
+                        ", url='" + url + '\'' +
+                        ", thumbnail_pic_s='" + thumbnail_pic_s + '\'' +
+                        ", thumbnail_pic_s02='" + thumbnail_pic_s02 + '\'' +
+                        ", thumbnail_pic_s03='" + thumbnail_pic_s03 + '\'' +
+                        '}';
+            }
         }
+
+        @Override
+        public String toString() {
+            return "ResultBean{" +
+                    "stat='" + stat + '\'' +
+                    ", data=" + data.toString() +
+                    '}';
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "ResponseBean{" +
+                "reason='" + reason + '\'' +
+                ", result=" + result.toString() +
+                ", error_code=" + error_code +
+                '}';
     }
 }

@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item name="category_vp" type="id"/>
+    <item name="category_ll" type="id"/>
+    <item name="addCategory_tv" type="id"/>
     <item name="addCategory" type="id"/>
     <item name="content_rv" type="id"/>
+    <item name="category_sv" type="id"/>
     
 </resources>

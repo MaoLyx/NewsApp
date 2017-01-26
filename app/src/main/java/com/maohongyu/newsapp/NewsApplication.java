@@ -1,4 +1,4 @@
-package com.maohongyu.newsapp.view;
+package com.maohongyu.newsapp;
 
 import android.app.Application;
 
@@ -8,5 +8,6 @@ import android.app.Application;
  */
 
 public class NewsApplication extends Application {
+
 
 }

@@ -18,7 +18,7 @@ public class CategoryBean {
         this.categories = categories;
     }
 
-    static class Category {
+    public class Category {
 
         private String name;
 
@@ -47,5 +47,12 @@ public class CategoryBean {
                     ", type='" + type + '\'' +
                     '}';
         }
+    }
+
+    @Override
+    public String toString() {
+        return "CategoryBean{" +
+                "categories=" + categories.toString() +
+                '}';
     }
 }

@@ -20,5 +20,17 @@ public interface IHomePresenter {
      */
     CategoryBean getCategoryObject();
 
+    /**
+     * 设置当前选择类型的对象
+     * @param category
+     */
+    void setCurrentCategory(CategoryBean.Category category);
+
+    /**
+     * 获取网络信息
+     * @param category
+     * @return 网络信息
+     */
+    void getInfoFromNet(CategoryBean.Category category);
 
 }
