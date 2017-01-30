@@ -1,7 +1,9 @@
 package com.maohongyu.newsapp.view.home;
 
-import com.maohongyu.newsapp.adapter.ContentAdater;
 import com.maohongyu.newsapp.model.CategoryBean;
+import com.maohongyu.newsapp.model.ResponseBean;
+
+import java.util.List;
 
 /**
  * Created by hongyu on 2017/1/25 下午2:36.
@@ -11,14 +13,21 @@ import com.maohongyu.newsapp.model.CategoryBean;
 public interface IHome {
 
     /**
-     * 主要内容的Adapter
-     * @param contentAdater
-     */
-    void setContentDatas(ContentAdater contentAdater);
-
-    /**
      * 添加类型标签
      * @param data 数据
      */
     void addCategoryView(CategoryBean data);
+
+    /**
+     * 将xi
+     * @param newsData
+     */
+    void setNewsToView(List<ResponseBean.ResultBean.DataBean> newsData);
+
+    /**
+     * 隐藏进度
+     */
+    void hideProgress();
+
+
 }

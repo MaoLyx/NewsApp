@@ -17,7 +17,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+import java.net.UnknownHostException;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,7 +38,7 @@ public class IHomePresenterComl implements IHomePresenter {
 
     private IHome iHome;
 
-    private ArrayList<CategoryBean.Category> categories;
+    private Call<ResponseBean> currentCall;
 
     @Override
     public String getCategoryFromFeil() {
@@ -76,20 +76,41 @@ public class IHomePresenterComl implements IHomePresenter {
         setCurrentCategory(category);
         Retrofit retrofit = RetrofitUntil.getRetrofit();
         IHttpService service = retrofit.create(IHttpService.class);
-        Call<ResponseBean> news = service.getNews(category.getType());
+        Call<ResponseBean> news =null;
+        if (category != null) {
+            news = service.getNews(category.getType());
+        }else {
+            news = service.getNews("");
+        }
+        currentCall = news;
         news.enqueue(new Callback<ResponseBean>() {
             @Override
             public void onResponse(Call<ResponseBean> call, Response<ResponseBean> response) {
-                Log.i(TAG, "onResponse: "+response.body().toString());
-
+                ResponseBean responseBean = response.body();
+                Log.i(TAG, "onResponse: "+ responseBean.toString());
+                if (responseBean != null) {
+                    if (responseBean.getError_code()==0) {
+                        iHome.setNewsToView(responseBean.getResult().getData());
+                    }
+                }
             }
 
             @Override
             public void onFailure(Call<ResponseBean> call, Throwable t) {
-                Toast.makeText(mContext, R.string.error_net, Toast.LENGTH_SHORT).show();
+//                Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
+                if (t instanceof UnknownHostException) {
+                    Toast.makeText(mContext, R.string.error_net, Toast.LENGTH_SHORT).show();
+                    iHome.hideProgress();
+                }
             }
+
         });
         return ;
+    }
+
+    @Override
+    public void cancelCurrentNetwork() {
+        currentCall.cancel();
     }
 
 

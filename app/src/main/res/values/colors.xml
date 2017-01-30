@@ -4,4 +4,6 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="grey">#bdcecdcd</color>>
+    <color name="news_title_color">#7a5b5a5a</color>
+    <color name="progress_backgraund">#a01d1d1d</color>
 </resources>

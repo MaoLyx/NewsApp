@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item name="category_ll" type="id"/>
-    <item name="addCategory_tv" type="id"/>
-    <item name="addCategory" type="id"/>
-    <item name="content_rv" type="id"/>
-    <item name="category_sv" type="id"/>
-    
+    <item name="category_ll"         type="id"/>
+    <item name="addCategory_tv"      type="id"/>
+    <item name="addCategory_iv"         type="id"/>
+    <item name="content_vp"          type="id"/>
+    <item name="category_sv"         type="id"/>
+    <item name="news_lv"             type="id"/>
+    <item name="newImage_sv"         type="id"/>
+    <item name="newsTitle_tv"        type="id"/>
+    <item name="newsAuthor_tv"       type="id"/>
+    <item name="newsDate_tv"         type="id"/>
+    <item name="progress_rv"         type="id"/>
 </resources>

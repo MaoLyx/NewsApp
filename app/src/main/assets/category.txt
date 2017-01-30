@@ -1,1 +1,1 @@
-{"categories":[{"name":"综合","type":"top"},{"name":"社会","type":"shehui"},{"name":"国内","type":"guonei"},{"name":"国际","type":"guoji"}]}
+{"categories":[{"name":"头条","type":"top"},{"name":"社会","type":"shehui"},{"name":"国内","type":"guonei"},{"name":"国际","type":"guoji"}]}

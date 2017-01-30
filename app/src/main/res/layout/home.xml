@@ -16,16 +16,28 @@
     </HorizontalScrollView>
 
     <ImageView
-        android:id="@id/addCategory"
+        android:id="@id/addCategory_iv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:src="@drawable/add"
         android:layout_margin="10dp"
         android:layout_alignParentRight="true"/>
-    <android.support.v7.widget.RecyclerView
-        android:id="@id/content_rv"
+    <android.support.v4.view.ViewPager
+        android:id="@id/content_vp"
         android:layout_below="@id/category_sv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+    <RelativeLayout
+        android:visibility="invisible"
+        android:id="@id/progress_rv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/progress_drawable">
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="10dp"/>
+    </RelativeLayout>
 
 </RelativeLayout>

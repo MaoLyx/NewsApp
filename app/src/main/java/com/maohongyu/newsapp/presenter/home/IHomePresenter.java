@@ -33,4 +33,6 @@ public interface IHomePresenter {
      */
     void getInfoFromNet(CategoryBean.Category category);
 
+    void cancelCurrentNetwork();
+
 }

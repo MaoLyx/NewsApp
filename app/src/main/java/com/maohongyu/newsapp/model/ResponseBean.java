@@ -173,7 +173,7 @@ public class ResponseBean {
     public String toString() {
         return "ResponseBean{" +
                 "reason='" + reason + '\'' +
-                ", result=" + result.toString() +
+                ", result=" + result +
                 ", error_code=" + error_code +
                 '}';
     }
