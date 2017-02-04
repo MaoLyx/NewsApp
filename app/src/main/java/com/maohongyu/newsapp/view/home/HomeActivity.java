@@ -1,8 +1,6 @@
 package com.maohongyu.newsapp.view.home;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -22,6 +20,7 @@ import com.maohongyu.newsapp.model.CategoryBean;
 import com.maohongyu.newsapp.model.ResponseBean;
 import com.maohongyu.newsapp.presenter.home.IHomePresenter;
 import com.maohongyu.newsapp.presenter.home.IHomePresenterComl;
+import com.maohongyu.newsapp.until.base.BaseActivity;
 import com.maohongyu.newsapp.view.detial.DetialActivity;
 import com.maohongyu.newsapp.view.selectcategory.SelectgoryCategoryActivity;
 
@@ -36,7 +35,7 @@ import butterknife.OnClick;
 /**
  * Created by maohongyu on 17/1/5.
  */
-public class HomeActivity extends Activity implements IHome {
+public class HomeActivity extends BaseActivity implements IHome {
 
     private static final String TAG = "HomeActivity";
 
@@ -59,16 +58,20 @@ public class HomeActivity extends Activity implements IHome {
 
     private List<ContentAdapter> newsAdapters = new ArrayList<ContentAdapter>();
 
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.home);
-        ButterKnife.bind(this);
-        initial();
+    protected void beforeInitView() {
 
     }
 
-    private void initial() {
+    @Override
+    protected void setView() {
+        setContentView(R.layout.home);
+        ButterKnife.bind(this);
+    }
+
+    @Override
+    protected void afterInitView() {
         iHomePresenter = new IHomePresenterComl(this, this);
         iHomePresenter.getCategoryFromFile();
         content_vp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
