@@ -16,7 +16,7 @@ public interface IHome {
      * 添加类型标签
      * @param data 数据
      */
-    void addCategoryView(CategoryBean data);
+    void addCategoryView(List<CategoryBean.Category> data);
 
     /**
      * 将xi

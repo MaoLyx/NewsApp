@@ -1,0 +1,19 @@
+{"categories":[{"name":"头条","type":"top"},{"name":"社会","type":"shehui"},{"name":"国内","type":"guonei"},{"name":"国际","type":"guoji"},{
+            "name":"娱乐",
+            "type":"yule"
+        },{
+            "name":"体育",
+            "type":"tiyu"
+        },{
+            "name":"军事",
+            "type":"junshi"
+        },{
+            "name":"科技",
+            "type":"keji"
+        },{
+            "name":"财经",
+            "type":"caijing"
+        },{
+            "name":"时尚",
+            "type":"shishang"
+        }]}

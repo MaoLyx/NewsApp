@@ -2,6 +2,7 @@ package com.maohongyu.newsapp.presenter.home;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -10,13 +11,10 @@ import com.maohongyu.newsapp.R;
 import com.maohongyu.newsapp.model.CategoryBean;
 import com.maohongyu.newsapp.model.IHttpService;
 import com.maohongyu.newsapp.model.ResponseBean;
-import com.maohongyu.newsapp.until.RetrofitUntil;
+import com.maohongyu.newsapp.until.FileUtil;
+import com.maohongyu.newsapp.until.http.RetrofitUntil;
 import com.maohongyu.newsapp.view.home.IHome;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.UnknownHostException;
 
 import retrofit2.Call;
@@ -41,30 +39,35 @@ public class IHomePresenterComl implements IHomePresenter {
     private Call<ResponseBean> currentCall;
 
     @Override
-    public String getCategoryFromFeil() {
-        Activity activity = (Activity) this.mContext;
-        StringBuffer sb = new StringBuffer();
-        try {
-            InputStream is = activity.getAssets().open("category.txt");
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
-            String line = null;
-            while ((line = bufferedReader.readLine()) != null) {
-                sb.append(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    public void getCategoryFromFile() {
+        Log.d(TAG, "getCategoryFromFile() called");
+        SharedPreferences preferences = mContext.getSharedPreferences("categorys", Context.MODE_PRIVATE);
+        String ctg = preferences.getString("CTG", null);
+        if (ctg != null) {
+            dealString(ctg);
+        }else {
+            FileUtil.getStringFromFile((Activity) mContext, "category.txt", new FileUtil.Callback() {
+                @Override
+                public void getStringFinish(String result) {
+                    dealString(result);
+                }
+            });
         }
-        Log.i(TAG, "getCategoryFromFeil: "+sb.toString());
-        return sb.toString();
+
     }
 
-    @Override
-    public CategoryBean getCategoryObject() {
-        Gson gson =  new Gson();
-        CategoryBean categoryBean =  gson.fromJson(getCategoryFromFeil(),CategoryBean.class);
-        Log.i(TAG, "getCategoryObject: "+categoryBean.toString());
-        return categoryBean;
+    private void dealString(String result) {
+        Gson gson = new Gson();
+        final CategoryBean categoryBean = gson.fromJson(result, CategoryBean.class);
+        ((Activity) mContext).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                iHome.addCategoryView(categoryBean.getCategories());
+                getInfoFromNet(null);
+            }
+        });
     }
+
 
     @Override
     public void setCurrentCategory(CategoryBean.Category category) {
@@ -76,10 +79,10 @@ public class IHomePresenterComl implements IHomePresenter {
         setCurrentCategory(category);
         Retrofit retrofit = RetrofitUntil.getRetrofit();
         IHttpService service = retrofit.create(IHttpService.class);
-        Call<ResponseBean> news =null;
+        Call<ResponseBean> news = null;
         if (category != null) {
             news = service.getNews(category.getType());
-        }else {
+        } else {
             news = service.getNews("");
         }
         currentCall = news;
@@ -87,9 +90,9 @@ public class IHomePresenterComl implements IHomePresenter {
             @Override
             public void onResponse(Call<ResponseBean> call, Response<ResponseBean> response) {
                 ResponseBean responseBean = response.body();
-                Log.i(TAG, "onResponse: "+ responseBean.toString());
+                Log.i(TAG, "onResponse: " + responseBean.toString());
                 if (responseBean != null) {
-                    if (responseBean.getError_code()==0) {
+                    if (responseBean.getError_code() == 0) {
                         iHome.setNewsToView(responseBean.getResult().getData());
                     }
                 }
@@ -105,7 +108,7 @@ public class IHomePresenterComl implements IHomePresenter {
             }
 
         });
-        return ;
+        return;
     }
 
     @Override
@@ -114,8 +117,8 @@ public class IHomePresenterComl implements IHomePresenter {
     }
 
 
-    public IHomePresenterComl(Context mContext,IHome iHome) {
+    public IHomePresenterComl(Context mContext, IHome iHome) {
         this.mContext = mContext;
-        this.iHome    = iHome;
+        this.iHome = iHome;
     }
 }

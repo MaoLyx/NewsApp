@@ -1,6 +1,7 @@
 <resources>
-    <string name="app_name">NewsApp</string>
+    <string name="app_name">新闻</string>
     <!--Logo-->
     <string name="logo_txt">新闻</string>
     <string name="error_net">网络访问异常..</string>
+    <string name="select_category_title">选择类型</string>
 </resources>

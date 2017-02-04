@@ -12,13 +12,7 @@ public interface IHomePresenter {
      * 从文件中拿到类型数据
      * @return 拿到类型数据
      */
-    String getCategoryFromFeil();
-
-    /**
-     * 从文件中拿到类型的对象
-     * @return 从文件中拿到类型的对象
-     */
-    CategoryBean getCategoryObject();
+    void getCategoryFromFile();
 
     /**
      * 设置当前选择类型的对象

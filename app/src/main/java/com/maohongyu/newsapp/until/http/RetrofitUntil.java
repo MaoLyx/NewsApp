@@ -1,4 +1,4 @@
-package com.maohongyu.newsapp.until;
+package com.maohongyu.newsapp.until.http;
 
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;

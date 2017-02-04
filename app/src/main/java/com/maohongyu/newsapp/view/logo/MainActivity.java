@@ -1,15 +1,13 @@
 package com.maohongyu.newsapp.view.logo;
 
-import android.app.Activity;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Window;
+import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 
 import com.maohongyu.newsapp.R;
 import com.maohongyu.newsapp.presenter.logo.ILogoCompl;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
 
     private ILogoCompl iLogoCompl;
 

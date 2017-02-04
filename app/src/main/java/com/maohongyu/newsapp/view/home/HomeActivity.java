@@ -1,12 +1,15 @@
 package com.maohongyu.newsapp.view.home;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -19,18 +22,23 @@ import com.maohongyu.newsapp.model.CategoryBean;
 import com.maohongyu.newsapp.model.ResponseBean;
 import com.maohongyu.newsapp.presenter.home.IHomePresenter;
 import com.maohongyu.newsapp.presenter.home.IHomePresenterComl;
+import com.maohongyu.newsapp.view.detial.DetialActivity;
+import com.maohongyu.newsapp.view.selectcategory.SelectgoryCategoryActivity;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 
 /**
  * Created by maohongyu on 17/1/5.
  */
 public class HomeActivity extends Activity implements IHome {
+
+    private static final String TAG = "HomeActivity";
 
     private long oldTime;
 
@@ -62,8 +70,7 @@ public class HomeActivity extends Activity implements IHome {
 
     private void initial() {
         iHomePresenter = new IHomePresenterComl(this, this);
-        addCategoryView(iHomePresenter.getCategoryObject());
-        iHomePresenter.getInfoFromNet(null);
+        iHomePresenter.getCategoryFromFile();
         content_vp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -83,9 +90,10 @@ public class HomeActivity extends Activity implements IHome {
         });
     }
 
+
     @Override
-    public void addCategoryView(CategoryBean data) {
-        categories = data.getCategories();
+    public void addCategoryView(List<CategoryBean.Category> data) {
+        this.categories = (ArrayList<CategoryBean.Category>) data;
         for (int i = 0; i < categories.size(); i++) {
             View view = View.inflate(this, R.layout.category_tv, null);
             View news = View.inflate(this, R.layout.news_list, null);
@@ -129,8 +137,15 @@ public class HomeActivity extends Activity implements IHome {
 
             @Override
             public void destroyItem(ViewGroup container, int position, Object object) {
-                if (newsViews.get(position).getParent() != null) {
-                    container.removeView(newsViews.get(position));
+                if (position>getCount()) {
+                    return;
+                }
+                try{
+                    if (newsViews.get(position).getParent() != null) {
+                        container.removeView(newsViews.get(position));
+                    }
+                }catch (Exception e){
+
                 }
             }
         });
@@ -139,15 +154,32 @@ public class HomeActivity extends Activity implements IHome {
     @Override
     public void setNewsToView(List<ResponseBean.ResultBean.DataBean> newsData) {
         for (int i = 0; i < categories.size(); i++) {
-            if (newsData.get(0).getCategory().equals(categories.get(i).getName())) {
-                ListView news_lv = (ListView) newsViews.get(i);
-                ContentAdapter adapter = (ContentAdapter) newsAdapters.get(i);
-                adapter.reSetNewsData(newsData, categories.get(i));
-                news_lv.setAdapter(adapter);
-                category_ll.getChildAt(i).setClickable(true);
+            if (categories.get(i).getName().equals(newsData.get(i).getCategory())) {
+                initListview(newsData, i);
+            }else if (null==newsData.get(i).getCategory()){
+                initListview(newsData, i);
             }
+            category_ll.getChildAt(i).setClickable(true);
         }
         progress_rv.setVisibility(View.INVISIBLE);
+    }
+
+    private void initListview(List<ResponseBean.ResultBean.DataBean> newsData, int i) {
+        ListView news_lv = (ListView) newsViews.get(i);
+        ContentAdapter adapter = (ContentAdapter) newsAdapters.get(i);
+        adapter.reSetNewsData(newsData, categories.get(i));
+        news_lv.setAdapter(adapter);
+        news_lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ContentAdapter adapter = (ContentAdapter) parent.getAdapter();
+                ResponseBean.ResultBean.DataBean item = adapter.getItem(position);
+                Intent intent =new Intent(HomeActivity.this, DetialActivity.class);
+                intent.putExtra("url",item.getUrl());
+                intent.putExtra("img",item.getThumbnail_pic_s());
+                HomeActivity.this.startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -161,6 +193,7 @@ public class HomeActivity extends Activity implements IHome {
         clearState();
         v.setBackgroundResource(R.color.grey);
         iHomePresenter.getInfoFromNet(categories.get(position));
+        Log.i(TAG, "getNewsInfoAndChangeState: " + categories.get(position).getType());
     }
 
     private void clearState() {
@@ -170,7 +203,33 @@ public class HomeActivity extends Activity implements IHome {
         }
     }
 
-    
+    @OnClick(R.id.addCategory_iv)
+    public void toSelectActivity() {
+        content_vp.setCurrentItem(0);
+        Intent intent = new Intent(this, SelectgoryCategoryActivity.class);
+        intent.putExtra("categorys", categories);
+        startActivityForResult(intent, 1009);
+//
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult() called with: requestCode = [" + requestCode + "], resultCode = [" + resultCode + "], data = [" + data + "]");
+        if (requestCode == 1009) {
+            if (resultCode == RESULT_OK ) {
+                if (data != null) {
+                    if (data.hasExtra("ctg")) {
+                        category_ll.removeAllViews();
+                        newsViews.clear();
+                        newsAdapters.clear();
+                        ArrayList<CategoryBean.Category> ctg = data.getParcelableArrayListExtra("ctg");
+                        addCategoryView(ctg);
+                        iHomePresenter.getInfoFromNet(ctg.get(0));
+                    }
+                }
+            }
+        }
+    }
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
