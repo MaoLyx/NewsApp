@@ -63,7 +63,6 @@ public class IHomePresenterComl implements IHomePresenter {
             @Override
             public void run() {
                 iHome.addCategoryView(categoryBean.getCategories());
-                getInfoFromNet(null);
             }
         });
     }
@@ -76,6 +75,7 @@ public class IHomePresenterComl implements IHomePresenter {
 
     @Override
     public void getInfoFromNet(CategoryBean.Category category) {
+        iHome.showProgress();
         setCurrentCategory(category);
         Retrofit retrofit = RetrofitUntil.getRetrofit();
         IHttpService service = retrofit.create(IHttpService.class);

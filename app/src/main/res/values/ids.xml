@@ -16,4 +16,5 @@
     <item name="back_im"                    type="id"/>
     <item name="head_img"                   type="id"/>
     <item name="new_wv"                     type="id" />
+    <item name="share_img"                  type="id" />
 </resources>

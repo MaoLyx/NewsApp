@@ -39,6 +39,8 @@ public class HomeActivity extends BaseActivity implements IHome {
 
     private static final String TAG = "HomeActivity";
 
+    private final int POSITION_FIRST = 0;
+
     private long oldTime;
 
     private IHomePresenter iHomePresenter;
@@ -83,7 +85,7 @@ public class HomeActivity extends BaseActivity implements IHome {
             @Override
             public void onPageSelected(int position) {
                 iHomePresenter.cancelCurrentNetwork();
-                getNewsInfoAndChangeState(category_ll.getChildAt(position), position);
+                changeTab(category_ll.getChildAt(position), position);
             }
 
             @Override
@@ -105,7 +107,7 @@ public class HomeActivity extends BaseActivity implements IHome {
             view.setLayoutParams(params);
             TextView textView = (TextView) view.findViewById(R.id.addCategory_tv);
             textView.setText(categories.get(i).getName());
-            if (i == 0) {
+            if (i == POSITION_FIRST) {
                 view.setBackgroundResource(R.color.grey);
             }
             final int position = i;
@@ -113,13 +115,14 @@ public class HomeActivity extends BaseActivity implements IHome {
                 @Override
                 public void onClick(View v) {
                     content_vp.setCurrentItem(position);
-                    getNewsInfoAndChangeState(v, position);
+                    changeTab(v, position);
 
                 }
             });
             category_ll.addView(view);
             newsViews.add(news);
             newsAdapters.add(adapter);
+            iHomePresenter.getInfoFromNet(categories.get(POSITION_FIRST));
         }
         content_vp.setAdapter(new PagerAdapter() {
             @Override
@@ -140,14 +143,11 @@ public class HomeActivity extends BaseActivity implements IHome {
 
             @Override
             public void destroyItem(ViewGroup container, int position, Object object) {
-                if (position>getCount()) {
-                    return;
-                }
-                try{
+                try {
                     if (newsViews.get(position).getParent() != null) {
                         container.removeView(newsViews.get(position));
                     }
-                }catch (Exception e){
+                } catch (Exception e) {
 
                 }
             }
@@ -159,13 +159,14 @@ public class HomeActivity extends BaseActivity implements IHome {
         for (int i = 0; i < categories.size(); i++) {
             if (categories.get(i).getName().equals(newsData.get(i).getCategory())) {
                 initListview(newsData, i);
-            }else if (null==newsData.get(i).getCategory()){
+            } else if (null == newsData.get(i).getCategory()) {
                 initListview(newsData, i);
             }
             category_ll.getChildAt(i).setClickable(true);
         }
         progress_rv.setVisibility(View.INVISIBLE);
     }
+
 
     private void initListview(List<ResponseBean.ResultBean.DataBean> newsData, int i) {
         ListView news_lv = (ListView) newsViews.get(i);
@@ -177,12 +178,19 @@ public class HomeActivity extends BaseActivity implements IHome {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ContentAdapter adapter = (ContentAdapter) parent.getAdapter();
                 ResponseBean.ResultBean.DataBean item = adapter.getItem(position);
-                Intent intent =new Intent(HomeActivity.this, DetialActivity.class);
-                intent.putExtra("url",item.getUrl());
-                intent.putExtra("img",item.getThumbnail_pic_s());
+                Intent intent = new Intent(HomeActivity.this, DetialActivity.class);
+                intent.putExtra("url", item.getUrl());
+                intent.putExtra("img", item.getThumbnail_pic_s());
+                intent.putExtra("author",item.getAuthor_name());
+                intent.putExtra("title",item.getTitle());
                 HomeActivity.this.startActivity(intent);
             }
         });
+    }
+
+    @Override
+    public void showProgress() {
+        progress_rv.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -190,13 +198,11 @@ public class HomeActivity extends BaseActivity implements IHome {
         progress_rv.setVisibility(View.INVISIBLE);
     }
 
-    private void getNewsInfoAndChangeState(View v, int position) {
-        progress_rv.setVisibility(View.VISIBLE);
+    private void changeTab(View v, int position) {
         v.setClickable(false);
         clearState();
         v.setBackgroundResource(R.color.grey);
         iHomePresenter.getInfoFromNet(categories.get(position));
-        Log.i(TAG, "getNewsInfoAndChangeState: " + categories.get(position).getType());
     }
 
     private void clearState() {
@@ -208,18 +214,17 @@ public class HomeActivity extends BaseActivity implements IHome {
 
     @OnClick(R.id.addCategory_iv)
     public void toSelectActivity() {
-        content_vp.setCurrentItem(0);
+        content_vp.setCurrentItem(POSITION_FIRST);
         Intent intent = new Intent(this, SelectgoryCategoryActivity.class);
         intent.putExtra("categorys", categories);
         startActivityForResult(intent, 1009);
-//
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(TAG, "onActivityResult() called with: requestCode = [" + requestCode + "], resultCode = [" + resultCode + "], data = [" + data + "]");
         if (requestCode == 1009) {
-            if (resultCode == RESULT_OK ) {
+            if (resultCode == RESULT_OK) {
                 if (data != null) {
                     if (data.hasExtra("ctg")) {
                         category_ll.removeAllViews();
@@ -227,7 +232,7 @@ public class HomeActivity extends BaseActivity implements IHome {
                         newsAdapters.clear();
                         ArrayList<CategoryBean.Category> ctg = data.getParcelableArrayListExtra("ctg");
                         addCategoryView(ctg);
-                        iHomePresenter.getInfoFromNet(ctg.get(0));
+                        iHomePresenter.getInfoFromNet(ctg.get(POSITION_FIRST));
                     }
                 }
             }
@@ -239,7 +244,7 @@ public class HomeActivity extends BaseActivity implements IHome {
         long currentTime = System.currentTimeMillis();
         if (KeyEvent.KEYCODE_BACK == keyCode) {
             if ((currentTime - oldTime) < 3000) {
-                System.exit(0);
+                System.exit(POSITION_FIRST);
                 return false;
             }
             oldTime = currentTime;

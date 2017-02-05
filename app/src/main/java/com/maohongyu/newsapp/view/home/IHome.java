@@ -24,6 +24,8 @@ public interface IHome {
      */
     void setNewsToView(List<ResponseBean.ResultBean.DataBean> newsData);
 
+    void showProgress();
+
     /**
      * 隐藏进度
      */
