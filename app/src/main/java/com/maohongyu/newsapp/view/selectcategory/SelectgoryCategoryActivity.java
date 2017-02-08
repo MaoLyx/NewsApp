@@ -1,6 +1,7 @@
 package com.maohongyu.newsapp.view.selectcategory;
 
 import android.content.Intent;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.GridView;
@@ -12,6 +13,7 @@ import com.maohongyu.newsapp.R;
 import com.maohongyu.newsapp.model.CategoryBean;
 import com.maohongyu.newsapp.presenter.selectcategory.ISelectComl;
 import com.maohongyu.newsapp.until.base.BaseActivity;
+import com.maohongyu.newsapp.view.home.HomeActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +32,8 @@ import butterknife.OnItemClick;
 public class SelectgoryCategoryActivity extends BaseActivity implements ISelectCategory {
 
     private static final String TAG = "SelectCategoryActivity";
+
+    private final String HASCATEGORY_KEY = "hasCategory";
 
     @BindView(R.id.select_category_item_gv)
     GridView select_category_item_gv;
@@ -92,20 +96,12 @@ public class SelectgoryCategoryActivity extends BaseActivity implements ISelectC
         hideProgress();
     }
 
-    @OnClick(R.id.back_im)
-    public void onClickBack(){
-        ArrayList<CategoryBean.Category> categories = (ArrayList<CategoryBean.Category>) getCategoryArriy(selectedCategorys);
-        Intent intent = new Intent();
-        intent.putExtra("ctg",categories);
-        setResult(RESULT_OK,intent);
-        finish();
-    }
-
     private List<CategoryBean.Category> getCategoryArriy(List<Map<String, String>> categorys) {
         List<CategoryBean.Category> list = new ArrayList<CategoryBean.Category>();
         if (categorys != null) {
             for (int i = 0; i < categorys.size(); i++) {
                 Map<String, String> stringStringMap = categorys.get(i);
+                Log.i(TAG, "getCategoryArriy:    name:"+stringStringMap.get("name")+"type:"+stringStringMap.get("type"));
                 CategoryBean.Category category = new CategoryBean.Category(stringStringMap.get("name"),stringStringMap.get("type"));
                 list.add(category);
             }
@@ -115,15 +111,11 @@ public class SelectgoryCategoryActivity extends BaseActivity implements ISelectC
 
     @OnItemClick(R.id.select_category_item_gv)
     public void onUnSelectItemClick(int position){
-        if (selectedCategorys.size()<4) {
             Map<String, String> item = unSelectedCategorys.get(position);
             selectedCategorys.add(selectedCategorys.size(),item);
             unSelectedCategorys.remove(item);
             selected_category_item_gv.invalidateViews();
             select_category_item_gv.invalidateViews();
-        }else {
-            Toast.makeText(this, "最多只能订阅4个新闻！", Toast.LENGTH_SHORT).show();
-        }
     }
 
     @OnItemClick(R.id.selected_category_item_gv)
@@ -148,13 +140,23 @@ public class SelectgoryCategoryActivity extends BaseActivity implements ISelectC
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (KeyEvent.KEYCODE_BACK == keyCode) {
-            ArrayList<CategoryBean.Category> categories = (ArrayList<CategoryBean.Category>) getCategoryArriy(selectedCategorys);
-            Intent intent = new Intent();
-            intent.putExtra("ctg",categories);
-            setResult(RESULT_OK,intent);
-            finish();
+            finishSelect();
             return true;
         }
         return super.onKeyDown(keyCode, event);
     }
+
+    @OnClick(R.id.back_im)
+    public void onClickBack(){
+        finishSelect();
+    }
+
+    private void finishSelect() {
+        ArrayList<CategoryBean.Category> categories = (ArrayList<CategoryBean.Category>) getCategoryArriy(selectedCategorys);
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.putExtra(HASCATEGORY_KEY,categories);
+        startActivity(intent);
+        finish();
+    }
+
 }

@@ -14,8 +14,11 @@ import com.maohongyu.newsapp.model.ResponseBean;
 import com.maohongyu.newsapp.until.FileUtil;
 import com.maohongyu.newsapp.until.http.RetrofitUntil;
 import com.maohongyu.newsapp.view.home.IHome;
+import com.maohongyu.newsapp.view.home.fragment.IContentView;
 
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -35,6 +38,8 @@ public class IHomePresenterComl implements IHomePresenter {
     private Context mContext;
 
     private IHome iHome;
+
+    private List<IContentView> iContents = new ArrayList<IContentView>();
 
     private Call<ResponseBean> currentCall;
 
@@ -62,7 +67,8 @@ public class IHomePresenterComl implements IHomePresenter {
         ((Activity) mContext).runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                iHome.addCategoryView(categoryBean.getCategories());
+                iHome.generateTab(categoryBean.getCategories());
+                iHome.generateContentsFragment(categoryBean.getCategories());
             }
         });
     }
@@ -74,8 +80,14 @@ public class IHomePresenterComl implements IHomePresenter {
     }
 
     @Override
-    public void getInfoFromNet(CategoryBean.Category category) {
+    public void getInfoFromNet(CategoryBean.Category category, final int position) {
+        Log.d(TAG, "getInfoFromNet() called with: category = [" + category + "], position = [" + position + "]");
         iHome.showProgress();
+        if(iContents.get(position).isLoad())
+        {
+            iHome.hideProgress();
+            return;
+        }
         setCurrentCategory(category);
         Retrofit retrofit = RetrofitUntil.getRetrofit();
         IHttpService service = retrofit.create(IHttpService.class);
@@ -90,17 +102,18 @@ public class IHomePresenterComl implements IHomePresenter {
             @Override
             public void onResponse(Call<ResponseBean> call, Response<ResponseBean> response) {
                 ResponseBean responseBean = response.body();
-                Log.i(TAG, "onResponse: " + responseBean.toString());
                 if (responseBean != null) {
                     if (responseBean.getError_code() == 0) {
-                        iHome.setNewsToView(responseBean.getResult().getData());
+                        Log.d(TAG, "onResponse() called with:  position = [" + position + "]"+"iContents.size= ["+iContents.size()+"]");
+                        iContents.get(position).addNewsContent(responseBean.getResult().getData());
+                        iContents.get(position).setLoad(true);
+                        iHome.hideProgress();
                     }
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBean> call, Throwable t) {
-//                Log.d(TAG, "onFailure() called with: call = [" + call + "], t = [" + t + "]");
                 if (t instanceof UnknownHostException) {
                     Toast.makeText(mContext, R.string.error_net, Toast.LENGTH_SHORT).show();
                     iHome.hideProgress();
@@ -112,8 +125,15 @@ public class IHomePresenterComl implements IHomePresenter {
     }
 
     @Override
-    public void cancelCurrentNetwork() {
-        currentCall.cancel();
+    public void setIContentView(IContentView iContentView) {
+        Log.d(TAG, "setIContentView() called with: iContentView = [" + iContentView + "]");
+        iContents.add(iContentView);
+    }
+
+
+    @Override
+    public void clearIndicator() {
+        iContents.clear();
     }
 
 

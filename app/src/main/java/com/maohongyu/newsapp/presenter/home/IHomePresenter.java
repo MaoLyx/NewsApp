@@ -1,6 +1,7 @@
 package com.maohongyu.newsapp.presenter.home;
 
 import com.maohongyu.newsapp.model.CategoryBean;
+import com.maohongyu.newsapp.view.home.fragment.IContentView;
 
 /**
  * Created by isle on 2017/1/10.
@@ -25,8 +26,9 @@ public interface IHomePresenter {
      * @param category
      * @return 网络信息
      */
-    void getInfoFromNet(CategoryBean.Category category);
+    void getInfoFromNet(CategoryBean.Category category,int position);
 
-    void cancelCurrentNetwork();
+    void setIContentView(IContentView iContentView);
 
+    void clearIndicator();
 }

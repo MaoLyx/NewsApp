@@ -1,28 +1,25 @@
 package com.maohongyu.newsapp.view.home;
 
 import android.content.Intent;
-import android.support.v4.view.PagerAdapter;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.maohongyu.newsapp.R;
-import com.maohongyu.newsapp.adapter.ContentAdapter;
 import com.maohongyu.newsapp.model.CategoryBean;
-import com.maohongyu.newsapp.model.ResponseBean;
 import com.maohongyu.newsapp.presenter.home.IHomePresenter;
 import com.maohongyu.newsapp.presenter.home.IHomePresenterComl;
-import com.maohongyu.newsapp.until.base.BaseActivity;
-import com.maohongyu.newsapp.view.detial.DetialActivity;
+import com.maohongyu.newsapp.view.home.fragment.ContentsFragment;
 import com.maohongyu.newsapp.view.selectcategory.SelectgoryCategoryActivity;
+import com.maohongyu.viewpagerindicator.ViewpagerIndicator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,22 +28,25 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static com.maohongyu.newsapp.R.id.category_ll;
+
 
 /**
  * Created by maohongyu on 17/1/5.
  */
-public class HomeActivity extends BaseActivity implements IHome {
+public class HomeActivity extends FragmentActivity implements IHome {
 
     private static final String TAG = "HomeActivity";
 
     private final int POSITION_FIRST = 0;
+    private final int HOMEACTIVITYCODE = 1009;
 
     private long oldTime;
 
     private IHomePresenter iHomePresenter;
 
-    @BindView(R.id.category_ll)
-    LinearLayout category_ll;
+    @BindView(category_ll)
+    ViewpagerIndicator indicator;
 
     @BindView(R.id.content_vp)
     ViewPager content_vp;
@@ -54,29 +54,52 @@ public class HomeActivity extends BaseActivity implements IHome {
     @BindView(R.id.progress_rv)
     RelativeLayout progress_rv;
 
-    private List<View> newsViews = new ArrayList<View>();
+    private FragmentPagerAdapter adapter;
 
-    private ArrayList<CategoryBean.Category> categories;
+    private List<ContentsFragment> fragments;
 
-    private List<ContentAdapter> newsAdapters = new ArrayList<ContentAdapter>();
+    private ArrayList<CategoryBean.Category> selectedCategory;
+
+    private final String HASCATEGORY_KEY = "hasCategory";
+
+    private boolean hasCategory;
 
 
     @Override
-    protected void beforeInitView() {
-
-    }
-
-    @Override
-    protected void setView() {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.home);
         ButterKnife.bind(this);
+        fragments = new ArrayList<ContentsFragment>();
+        Intent i = getIntent();
+        if (i.hasExtra(HASCATEGORY_KEY)) {
+            ArrayList<CategoryBean.Category> parcelable = i.getParcelableArrayListExtra(HASCATEGORY_KEY);
+            selectedCategory = (ArrayList<CategoryBean.Category>) parcelable;
+            hasCategory = true;
+        }
+        attachPresenter();
+        setViewPagerAdapter();
     }
 
-    @Override
-    protected void afterInitView() {
+    protected void attachPresenter() {
         iHomePresenter = new IHomePresenterComl(this, this);
-        iHomePresenter.getCategoryFromFile();
-        content_vp.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+    }
+
+
+    private void setViewPagerAdapter() {
+        adapter = new FragmentPagerAdapter(getSupportFragmentManager()) {
+            @Override
+            public Fragment getItem(int position) {
+                return fragments.get(position);
+            }
+
+            @Override
+            public int getCount() {
+                return fragments.size();
+            }
+        };
+        content_vp.setAdapter(adapter);
+        indicator.setListener(new ViewpagerIndicator.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
@@ -84,8 +107,7 @@ public class HomeActivity extends BaseActivity implements IHome {
 
             @Override
             public void onPageSelected(int position) {
-                iHomePresenter.cancelCurrentNetwork();
-                changeTab(category_ll.getChildAt(position), position);
+                iHomePresenter.getInfoFromNet(selectedCategory.get(position), position);
             }
 
             @Override
@@ -93,100 +115,53 @@ public class HomeActivity extends BaseActivity implements IHome {
 
             }
         });
+        if (!hasCategory) {
+            iHomePresenter.getCategoryFromFile();
+        }else {
+            generateTab(selectedCategory);
+            generateContentsFragment(selectedCategory);
+        }
     }
 
 
     @Override
-    public void addCategoryView(List<CategoryBean.Category> data) {
-        this.categories = (ArrayList<CategoryBean.Category>) data;
-        for (int i = 0; i < categories.size(); i++) {
-            View view = View.inflate(this, R.layout.category_tv, null);
-            View news = View.inflate(this, R.layout.news_list, null);
-            ContentAdapter adapter = new ContentAdapter(null, null, this);
-            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            view.setLayoutParams(params);
-            TextView textView = (TextView) view.findViewById(R.id.addCategory_tv);
-            textView.setText(categories.get(i).getName());
-            if (i == POSITION_FIRST) {
-                view.setBackgroundResource(R.color.grey);
-            }
-            final int position = i;
-            view.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    content_vp.setCurrentItem(position);
-                    changeTab(v, position);
-
-                }
-            });
-            category_ll.addView(view);
-            newsViews.add(news);
-            newsAdapters.add(adapter);
-            iHomePresenter.getInfoFromNet(categories.get(POSITION_FIRST));
+    public void generateTab(List<CategoryBean.Category> data) {
+        if (data != null && data.size() > 0) {
+            selectedCategory = (ArrayList<CategoryBean.Category>) data;
+            createTab(data);
+        } else if (hasCategory && selectedCategory != null) {
+            createTab(selectedCategory);
         }
-        content_vp.setAdapter(new PagerAdapter() {
-            @Override
-            public int getCount() {
-                return newsViews.size();
-            }
+        indicator.setViewPeger(content_vp, 0);
+    }
 
-            @Override
-            public boolean isViewFromObject(View view, Object object) {
-                return view == object;
-            }
-
-            @Override
-            public Object instantiateItem(ViewGroup container, int position) {
-                container.addView(newsViews.get(position));
-                return newsViews.get(position);
-            }
-
-            @Override
-            public void destroyItem(ViewGroup container, int position, Object object) {
-                try {
-                    if (newsViews.get(position).getParent() != null) {
-                        container.removeView(newsViews.get(position));
-                    }
-                } catch (Exception e) {
-
-                }
-            }
-        });
+    private void createTab(List<CategoryBean.Category> data) {
+        List<String> titles = getTitles(data);
+        indicator.setTitleItem(titles);
     }
 
     @Override
-    public void setNewsToView(List<ResponseBean.ResultBean.DataBean> newsData) {
-        for (int i = 0; i < categories.size(); i++) {
-            if (categories.get(i).getName().equals(newsData.get(i).getCategory())) {
-                initListview(newsData, i);
-            } else if (null == newsData.get(i).getCategory()) {
-                initListview(newsData, i);
-            }
-            category_ll.getChildAt(i).setClickable(true);
+    public void generateContentsFragment(List<CategoryBean.Category> data) {
+        for (int i = 0; i < data.size(); i++) {
+            ContentsFragment fragment = ContentsFragment.newInstance();
+            iHomePresenter.setIContentView(fragment);
+            fragments.add(fragment);
         }
-        progress_rv.setVisibility(View.INVISIBLE);
+        adapter.notifyDataSetChanged();
+        Log.d(TAG, "generateContentsFragment() called with: data --------------generateContentsFragment ");
+        iHomePresenter.getInfoFromNet(data.get(0), 0);
     }
 
 
-    private void initListview(List<ResponseBean.ResultBean.DataBean> newsData, int i) {
-        ListView news_lv = (ListView) newsViews.get(i);
-        ContentAdapter adapter = (ContentAdapter) newsAdapters.get(i);
-        adapter.reSetNewsData(newsData, categories.get(i));
-        news_lv.setAdapter(adapter);
-        news_lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ContentAdapter adapter = (ContentAdapter) parent.getAdapter();
-                ResponseBean.ResultBean.DataBean item = adapter.getItem(position);
-                Intent intent = new Intent(HomeActivity.this, DetialActivity.class);
-                intent.putExtra("url", item.getUrl());
-                intent.putExtra("img", item.getThumbnail_pic_s());
-                intent.putExtra("author",item.getAuthor_name());
-                intent.putExtra("title",item.getTitle());
-                HomeActivity.this.startActivity(intent);
-            }
-        });
+    private List<String> getTitles(List<CategoryBean.Category> data) {
+        List<String> list = new ArrayList<String>();
+        for (CategoryBean.Category category : data) {
+            Log.d(TAG, "getTitles() called with: data = [" + category + "]");
+            list.add(category.getName());
+        }
+        return list;
     }
+
 
     @Override
     public void showProgress() {
@@ -198,45 +173,14 @@ public class HomeActivity extends BaseActivity implements IHome {
         progress_rv.setVisibility(View.INVISIBLE);
     }
 
-    private void changeTab(View v, int position) {
-        v.setClickable(false);
-        clearState();
-        v.setBackgroundResource(R.color.grey);
-        iHomePresenter.getInfoFromNet(categories.get(position));
-    }
-
-    private void clearState() {
-        for (int i = 0; i < category_ll.getChildCount(); i++) {
-            View child = category_ll.getChildAt(i);
-            child.setBackgroundResource(android.R.color.transparent);
-        }
-    }
 
     @OnClick(R.id.addCategory_iv)
     public void toSelectActivity() {
         content_vp.setCurrentItem(POSITION_FIRST);
         Intent intent = new Intent(this, SelectgoryCategoryActivity.class);
-        intent.putExtra("categorys", categories);
-        startActivityForResult(intent, 1009);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(TAG, "onActivityResult() called with: requestCode = [" + requestCode + "], resultCode = [" + resultCode + "], data = [" + data + "]");
-        if (requestCode == 1009) {
-            if (resultCode == RESULT_OK) {
-                if (data != null) {
-                    if (data.hasExtra("ctg")) {
-                        category_ll.removeAllViews();
-                        newsViews.clear();
-                        newsAdapters.clear();
-                        ArrayList<CategoryBean.Category> ctg = data.getParcelableArrayListExtra("ctg");
-                        addCategoryView(ctg);
-                        iHomePresenter.getInfoFromNet(ctg.get(POSITION_FIRST));
-                    }
-                }
-            }
-        }
+        intent.putExtra("categorys", selectedCategory);
+        startActivity(intent);
+        finish();
     }
 
     @Override

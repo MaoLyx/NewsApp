@@ -10,9 +10,9 @@ import android.widget.TextView;
 
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.maohongyu.newsapp.R;
-import com.maohongyu.newsapp.model.CategoryBean;
 import com.maohongyu.newsapp.model.ResponseBean;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,30 +25,21 @@ public class ContentAdapter extends BaseAdapter {
 
     private static final String TAG = "ContentAdapter";
 
-    private List<ResponseBean.ResultBean.DataBean> datas;
 
-    private CategoryBean.Category currentCategory;
+    private List<ResponseBean.ResultBean.DataBean> datas =new ArrayList<ResponseBean.ResultBean.DataBean>();
 
     private Context mContext;
 
-    public ContentAdapter(List<ResponseBean.ResultBean.DataBean> datas, CategoryBean.Category category, Context context) {
-        this.datas      = datas;
-        currentCategory = category;
+    public ContentAdapter(List<ResponseBean.ResultBean.DataBean> datas, Context context) {
         this.mContext = context;
+        if (datas != null) {
+            this.datas.addAll(datas);
+        }
 
     }
 
-
-    public void reSetNewsData(List<ResponseBean.ResultBean.DataBean> datas,CategoryBean.Category category){
-        if (currentCategory != null) {
-            if (!currentCategory.getType().equals(category.getType())) {
-                this.datas      = datas;
-                currentCategory = category;
-            }
-        }else {
-            this.datas      = datas;
-            currentCategory = category;
-        }
+    public void addData(List<ResponseBean.ResultBean.DataBean> datas){
+        this.datas.addAll(datas);
     }
 
     @Override
